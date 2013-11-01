@@ -60,6 +60,11 @@ public class SpringConfiguration {
   @Inject
   Environment env;
 
+  public String getPlatformRestURL()
+  {
+	  return env.getProperty("platformRestURL");
+  }
+  
   @Bean
   public javax.sql.DataSource dataSource() {
     DataSource dataSource = new DataSource();

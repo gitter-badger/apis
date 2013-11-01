@@ -32,11 +32,13 @@
         <div class="control-group">
           <label class="control-label">Identifier</label>
           <div class="controls">
+	    <% String j_username = (String)request.getAttribute("j_username");
+	       if (j_username == null) j_username = "";
+	       %>
             <input type="text" class="input-xlarge" id="username"
-              name="j_username" rel="popover"
+              name="j_username" rel="popover" value="<%= j_username %>"
               data-content="Enter your identifier."
               data-original-title="Identifier" />
-            <p class="help-block">Hint: can be anything</p>
           </div>
         </div>
 
@@ -47,7 +49,10 @@
               name="j_password" rel="popover"
               data-content="What's your password?"
               data-original-title="Password" />
-            <p class="help-block">Hint: can be anything</p>
+	    <% String error = (String)request.getAttribute("error");
+	       if (error != null) { %>
+            <p class="error-block"><%= error %></p>
+	    <% } %>
           </div>
         </div>
         <input type="hidden" name="AUTH_STATE" value="${AUTH_STATE}" />

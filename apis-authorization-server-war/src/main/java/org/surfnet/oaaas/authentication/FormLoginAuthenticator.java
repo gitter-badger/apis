@@ -55,8 +55,14 @@ public class FormLoginAuthenticator extends AbstractAuthenticator {
     AuthenticatedPrincipal principal = (AuthenticatedPrincipal) (session != null ? session
         .getAttribute(SESSION_IDENTIFIER) : null);
     if (request.getMethod().equals("POST")) {
-      processForm(request);
-      chain.doFilter(request, response);
+      if (processForm(request))
+      {
+    	  chain.doFilter(request, response);
+      }
+      else
+      {
+    	  processInitial(request, response, returnUri, authStateValue);
+      }
     } else if (principal != null) {
       // we stil have the session
       setAuthStateValue(request, authStateValue);
@@ -82,11 +88,12 @@ public class FormLoginAuthenticator extends AbstractAuthenticator {
    * @param request
    *          the {@link HttpServletRequest}
    */
-  protected void processForm(final HttpServletRequest request) {
+  protected boolean processForm(final HttpServletRequest request) {
     setAuthStateValue(request, request.getParameter(AUTH_STATE));
     AuthenticatedPrincipal principal = new AuthenticatedPrincipal(request.getParameter("j_username"));
     request.getSession().setAttribute(SESSION_IDENTIFIER, principal);
     setPrincipal(request, principal);
+    return true;
   }
 
 }
