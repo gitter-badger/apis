@@ -7,7 +7,8 @@
   <meta name="description" content="" />
   <meta name="author" content="" />
 
-  <title>Login</title>
+  <title>Login: This page should be replaced or edited to display the
+  uTest main login UI.</title>
   <link rel="stylesheet" href="${pageContext.request.contextPath}/client/css/bootstrap.min.css" />
   <link rel="stylesheet" href="${pageContext.request.contextPath}/client/css/style.css" />
   <script type="text/javascript" src="${pageContext.request.contextPath}/client/js/lib/jquery.js"></script>
@@ -23,7 +24,8 @@
 <div class="main">
   <div class="full">
     <div class="page-header">
-      <h1>Login</h1>
+      <h1>Login: This page should be replaced or edited to display the
+  uTest main login UI.</h1>
     </div>
 
     <form class="form-horizontal" id="registerHere" method="post"
