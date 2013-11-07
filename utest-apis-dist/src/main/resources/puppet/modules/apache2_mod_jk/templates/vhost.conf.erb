@@ -1,0 +1,31 @@
+<VirtualHost <%= vhost_name %>:<%= port %>>
+     
+     RewriteEngine On
+     RewriteCond %{SERVER_PORT} !^<%= sslport %>$
+     RewriteRule ^.*$ https://%{SERVER_NAME}%{REQUEST_URI} [L,R]
+     
+</VirtualHost>
+     
+<VirtualHost <%= vhost_name %>:<%= sslport %>>
+     
+     ServerAdmin sysops@utest.com
+     SSLCertificateFile /etc/apache2/ssl/star_utest_com.crt
+     SSLCertificateKeyFile /etc/apache2/ssl/star_utest_com.key
+     SSLCertificateChainFile /etc/apache2/ssl/DigiCertCA.crt
+     
+     DocumentRoot <%= document_root %>
+     
+     <Directory <%= document_root %>>
+         Options Indexes FollowSymLinks MultiViews
+         AllowOverride None
+         Order allow,deny
+         allow from all
+     </Directory>
+     
+     LogLevel info
+     CustomLog "|/usr/bin/logger -i -tapache2 -plocal1.info" combined
+     ErrorLog syslog:local2
+
+     JkMount /j* <%= jvm_route %>
+
+</VirtualHost>

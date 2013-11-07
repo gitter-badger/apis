@@ -1,0 +1,535 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+
+    "Description": "Based on aws-cfn-puppet",
+
+    "Parameters" : {
+
+	"CCInstanceType" : {
+	    "Description" : "EC2 instance type for CC nodes",
+	    "Type" : "String",
+	    "Default" : "t1.micro",
+	    "AllowedValues" : [ "t1.micro", "m1.small", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "c1.medium", "c1.xlarge", "cc1.4xlarge" ],
+	    "ConstraintDescription" : "Must be a valid instance type"
+	},
+
+	"FEInstanceType" : {
+	    "Description" : "EC2 instance type for FE nodes",
+	    "Type" : "String",
+	    "Default" : "t1.micro",
+	    "AllowedValues" : [ "t1.micro", "m1.small", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "c1.medium", "c1.xlarge", "cc1.4xlarge" ],
+	    "ConstraintDescription" : "Must be a valid instance type"
+	},
+
+	"MinFEInstances" : {
+	    "Description" : "Minimum number of instances in FEAutoScalingGroup",
+	    "Type" : "Number",
+	    "Default" : "2",
+	    "MinValue" : "1",
+	    "ConstraintDescription": "Must be a whole number >= 1"
+	},
+
+	"MaxFEInstances" : {
+	    "Description" : "Maximum number of instances in FEAutoScalingGroup",
+	    "Type" : "Number",
+	    "Default" : "3",
+	    "ConstraintDescription": "Must be a whole number >= MinFEInstances"
+	},
+
+	"DBInstanceType" : {
+	    "Description" : "RDS instance type for DB nodes",
+	    "Type" : "String",
+	    "Default" : "db.m1.small",
+	    "AllowedValues" : [ "db.t1.micro", "db.m1.small", "db.m1.medium", "db.m1.large", "db.m1.xlarge", "db.m2.xlarge", "db.m2.2xlarge", "db.m2.4xlarge", "db.cr1.8xlarge" ],
+	    "ConstraintDescription" : "Must be a valid instance type"
+	},
+
+	"DBMasterUsername" : {
+	    "Description" : "Username for RDS master user",
+	    "Type" : "String",
+	    "Default" : "master",
+	    "ConstraintDescription" : "May not be empty",
+	    "NoEcho" : "TRUE"
+	},
+
+	"DBMasterPassword" : {
+	    "Description" : "Password for RDS master user",
+	    "Type" : "String",
+	    "Default" : "masterpass",
+	    "ConstraintDescription" : "May not be empty",
+	    "NoEcho" : "TRUE"
+	},
+
+	"DBSnapshotIdentifier" : {
+	    "Description" : "Snapshot for configuring the initial database",
+	    "Type" : "String"
+	},
+
+	"DBName" : {
+	    "Description" : "Name of the database application schema",
+	    "Type" : "String",
+	    "Default" : "apis",
+	    "ConstraintDescription" : "Must be present in the snapshot"
+	},
+
+	"DBUsername" : {
+	    "Description" : "Username for the application database user",
+	    "Type" : "String",
+	    "Default" : "apis",
+	    "ConstraintDescription" : "Must be present in the snapshot"
+	},
+
+	"DBPassword" : {
+	    "Description" : "Password for the application database user",
+	    "Type" : "String",
+	    "Default" : "apis",
+	    "ConstraintDescription" : "Must be present in the snapshot"
+	},
+
+	"DBAllocatedStorage" : {
+	    "Description" : "Storage (in GB) for db1",
+	    "Type" : "Number",
+	    "Default" : "10",
+	    "ConstraintDescription" : "Must be a whole number >= 10"
+	},
+
+	"KeyName" : {
+	    "Description" : "Name of EC2 key pair for SSH access to EC2 instances",
+	    "Type" : "String"
+	},
+
+	"PlatformRestURL" : {
+	    "Description" : "URL for the platform environment associated with this deployment",
+	    "Type" : "String",
+	    "Default" : "https://my.utest.com/platform/services/v4/rest/",
+	    "ConstraintDescription" : "Must be a valid uTest Platform URL"
+	},
+
+	"NewRelicKey" : {
+	    "Description" : "API key for NewRelic Access",
+	    "Type" : "String",
+	    "NoEcho" : "TRUE"
+	}
+    },
+
+    "Mappings" : {
+	"AWSInstanceType2Arch" : {
+	    "t1.micro" : { "Arch" : "32" },
+	    "m1.small" : { "Arch" : "32" },
+	    "m1.large" : { "Arch" : "64" },
+	    "m1.xlarge" : { "Arch" : "64" },
+	    "m2.xlarge" : { "Arch" : "64" },
+	    "m2.2xlarge" : { "Arch" : "64" },
+	    "m2.4xlarge" : { "Arch" : "64" },
+	    "c1.medium" : { "Arch" : "32" },
+	    "c1.xlarge" : { "Arch" : "64" },
+	    "cc1.4xlarge" : { "Arch" : "64" }
+	},
+
+	"AWSRegionArch2AMI" : {
+	    "us-east-1": {"32": "ami-21d9a948", "64": "ami-23d9a94a"}, "ap-northeast-1": {"32": "ami-4b12984a", "64": "ami-51129850"}, "ap-southeast-1": {"32": "ami-a22f66f0", "64": "ami-a02f66f2"}, "sa-east-1": {"32": "ami-227edb3f", "64": "ami-5c7edb41"}, "ap-southeast-2": {"32": "ami-914ddeab", "64": "ami-974ddead"}, "us-west-1": {"32": "ami-3a072e7f", "64": "ami-c4072e81"}, "eu-west-1": {"32": "ami-8fb1a3fb", "64": "ami-89b1a3fd"}
+	}
+    },
+
+    "Resources" : { 
+
+	"CFNInitUser" : {
+	    "Type" : "AWS::IAM::User",
+	    "Properties" : {
+		"Policies": [{
+		    "PolicyName": "AccessForCFNInit",
+		    "PolicyDocument" : {
+			"Statement": [
+			    { "Effect" : "Allow",
+			      "Action" : "cloudformation:DescribeStackResource",
+			      "Resource" : "*"
+			    }
+			]
+		    }
+		}]
+	    }
+	},
+
+	"CFNInitUserKeys" : {
+	    "Type" : "AWS::IAM::AccessKey",
+	    "Properties" : {
+		"UserName" : { "Ref": "CFNInitUser" }
+	    }
+	},
+
+	"cc1" : {
+	    "Type" : "AWS::EC2::Instance",
+	    "DependsOn" : "db1",
+	    "Metadata" : {
+		"AWS::CloudFormation::Init" : {
+		    "config" : {
+			"packages" : {
+			    "apt" : {
+				"puppet" : [],
+				"puppetmaster" : [],
+ 				"ruby-dev" : [],
+				"gcc" : [],
+				"make" : [],
+				"rubygems" : []
+			    },
+			    "rubygems" : {
+				"json" : []
+			    }
+			},
+			"files" : {
+			    "/var/dist/.placeholder" : {
+				"mode" : "100644",
+				"owner" : "root",
+				"group" : "root",
+				"content" : "# Placeholder for creating /var/dist\n"
+			    },
+			    "/etc/puppet/autosign.conf" : {
+				"content" : "*.internal\n",
+				"mode" : "100644",
+				"owner" : "root",
+				"group" : "root"
+			    },
+			    "/etc/puppet/fileserver.conf" : {
+				"content" : "[modules]\n allow *.internal\n\n[dist]\n path /var/dist\n allow *.internal\n\n",
+				"mode" : "100644",
+				"owner" : "root",
+				"group" : "root"
+			    }, 
+			    "/etc/puppet/puppet.conf" : {
+				"content" : { "Fn::Join" : ["", [
+				    "[main]\n",
+				    " runinterval=300\n",
+				    " logdir=/var/log/puppet\n",
+				    " rundir=/var/run/puppet\n",
+				    " ssldir=$vardir/ssl\n",
+				    " pluginsync=true\n",
+				    "[agent]\n",
+				    " classfile=$vardir/classes.txt\n",
+				    " localconfig=$vardir/localconfig\n"]] },
+				"mode" : "000644",
+				"owner" : "root",
+				"group" : "root"
+			    },
+			    "/etc/puppet/modules/cfn/manifests/init.pp" : {
+				"content" : "class cfn {}",
+				"mode" : "100644",
+				"owner" : "root",
+				"group" : "root"
+			    },
+			    "/etc/puppet/modules/cfn/lib/facter/cfn.rb" : {
+				"source" : "https://s3.amazonaws.com/cloudformation-examples/cfn-facter-plugin.rb",
+				"mode" : "100644",
+				"owner" : "root",
+				"group" : "root"
+			    },
+			    "/etc/default/puppet" : {
+				"content" : { "Fn::Join" : [ "", [
+				    "START=yes\n",
+				    "SERVER=`curl http://169.254.169.254/latest/meta-data/hostname`\n",
+				    "CERTNAME=cc-`echo $SERVER | tr '[:upper:]' '[:lower:]'`\n",
+				    "DAEMON_OPTS=\"--certname $CERTNAME --server $SERVER\"\n"
+				] ] },
+				"mode" : "000644",
+				"owner" : "root",
+				"group" : "root"
+			    }
+			},
+			"services" : {
+			    "sysvinit" : { 
+				"puppetmaster" : {
+				    "enabled" : "true",
+				    "ensureRunning" : "true" 
+				},
+				"puppet" : {
+				    "enabled" : "true",
+				    "ensureRunning" : "true" 
+				}
+			    }
+			}
+		    }
+		},
+		"Puppet" : {
+		    "db1_address" : { "Fn::GetAtt" : [ "db1", "Endpoint.Address" ] },
+		    "db_name" : { "Ref" : "DBName" },
+		    "db_username" : { "Ref" : "DBUsername" },
+		    "db_password" : { "Ref" : "DBPassword" },
+		    "platform_rest_url" : { "Ref" : "PlatformRestURL" },
+		    "newrelic_key" : { "Ref" : "NewRelicKey" },
+		    "stack_name" : { "Ref" : "AWS::StackName" }
+		}
+
+	    },
+
+	    "Properties" : {
+		"InstanceType" : { "Ref" : "CCInstanceType" },
+		"SecurityGroups" : [ { "Ref" : "CCSecurityGroup" }, { "Ref" : "PuppetMasterSecurityGroup" }, { "Ref" : "SyslogSecurityGroup" } ],
+		"ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+						  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "CCInstanceType" }, "Arch" ] } ] },
+		"KeyName" : { "Ref" : "KeyName" },
+		"UserData" : { 
+		    "Fn::Base64" : { 
+			"Fn::Join" : ["", [ "#!/bin/bash\n",
+					    "apt-get -y update\n",
+					    "apt-get -y install python-setuptools\n",
+					    "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+					    "/usr/local/bin/cfn-init -v --region ", { "Ref" : "AWS::Region" },
+					    " -s ", { "Ref" : "AWS::StackName" }, " -r cc1 ",
+					    " --access-key ", { "Ref" : "CFNInitUserKeys" },
+					    " --secret-key ", { "Fn::GetAtt" : ["CFNInitUserKeys", "SecretAccessKey"]}, "\n",
+					    "/usr/local/bin/cfn-signal -e $? '", { "Ref" : "PuppetMasterWaitHandle" }, "'\n" ] ]
+		    }
+		},
+		"Tags" : [ {
+			"Key" : "Name",
+			"Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "CC1" ] ] }
+			} ]
+	    }
+	},
+
+	"SyslogSecurityGroup" : {
+	    "Type" : "AWS::EC2::SecurityGroup",
+	    "Properties" : {
+		"GroupDescription" : "Allows client access to syslog on cc1",
+		"SecurityGroupIngress" : [
+		    { "IpProtocol" : "tcp", "FromPort" : "10514", "ToPort" : "10514", "SourceSecurityGroupName" : { "Ref" : "FESecurityGroup" } }
+		]
+	    }
+	},
+
+	"PuppetMasterSecurityGroup" : {
+	    "Type" : "AWS::EC2::SecurityGroup",
+	    "Properties" : {
+		"GroupDescription" : "Allows Puppet clients to access puppetmaster on cc1",
+		"SecurityGroupIngress" : [
+		    { "IpProtocol" : "tcp", "FromPort" : "8140", "ToPort" : "8140", "SourceSecurityGroupName" : { "Ref" : "FESecurityGroup" } }
+		]
+	    }
+	},
+
+	"CCSecurityGroup" : {
+	    "Type" : "AWS::EC2::SecurityGroup",
+	    "Properties" : {
+		"GroupDescription" : "Allows SSH access to cc1 from the world",
+		"SecurityGroupIngress" : [
+		    { "IpProtocol" : "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": "0.0.0.0/0" }
+		] 
+
+	    }
+	},
+
+	"PuppetMasterWaitHandle" : {
+	    "Type" : "AWS::CloudFormation::WaitConditionHandle"
+	},
+
+	"PuppetMasterWaitCondition" : {
+	    "Type" : "AWS::CloudFormation::WaitCondition",
+	    "DependsOn" : "cc1",
+	    "Properties" : {
+		"Handle" : { "Ref" : "PuppetMasterWaitHandle" },
+		"Timeout" : "1200"
+	    }
+	},
+
+	"FESecurityGroup" : {
+	    "Type" : "AWS::EC2::SecurityGroup",
+	    "Properties" : {
+		"GroupDescription" : "Security group for FE instances",
+		"SecurityGroupIngress" : [
+		    { "IpProtocol" : "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": "0.0.0.0/0" },
+		    { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "SourceSecurityGroupOwnerId" : {"Fn::GetAtt" : ["elb1", "SourceSecurityGroup.OwnerAlias"]}, "SourceSecurityGroupName" : {"Fn::GetAtt" : ["elb1", "SourceSecurityGroup.GroupName"]} },
+		    { "IpProtocol" : "tcp", "FromPort" : "443", "ToPort" : "443", "SourceSecurityGroupOwnerId" : {"Fn::GetAtt" : ["elb1", "SourceSecurityGroup.OwnerAlias"]}, "SourceSecurityGroupName" : {"Fn::GetAtt" : ["elb1", "SourceSecurityGroup.GroupName"]} }
+		]
+	    }
+	},
+
+	"FEAutoScalingGroup" : {
+	    "Type" : "AWS::AutoScaling::AutoScalingGroup",
+	    "DependsOn" : "PuppetMasterWaitCondition",
+	    "Properties" : {
+		"AvailabilityZones" : { "Fn::GetAZs" : "" },
+		"LaunchConfigurationName" : { "Ref" : "FELaunchConfig" },
+		"MinSize" : { "Ref" : "MinFEInstances" },
+		"MaxSize" : { "Ref" : "MaxFEInstances" },
+		"LoadBalancerNames" : [ { "Ref" : "elb1" } ],
+		"Tags" : [ {
+			"Key" : "Name",
+			"Value" : { "Fn::Join" : [ "-", [ { "Ref" : "AWS::StackName" }, "FE" ] ] },
+			"PropagateAtLaunch" : true 
+			} ]
+	    }
+	},
+	
+	"FELaunchConfig" : {
+	    "Type" : "AWS::AutoScaling::LaunchConfiguration",
+	    "Metadata" : {
+		"AWS::CloudFormation::Init" : {
+		    "config" : {
+			"packages" : {
+			    "apt" : {
+				"puppet" : [],
+				"ruby-dev" : [],
+				"gcc" : [],
+				"make" : [],
+				"rubygems" : []
+			    },
+			    "rubygems" : {
+				"json" : []
+			    }
+			},
+			"files" : {
+			    "/etc/puppet/puppet.conf" : {
+				"content" : { "Fn::Join" : ["", [
+				    "[main]\n",
+				    " runinterval=300\n",
+				    " logdir=/var/log/puppet\n",
+				    " rundir=/var/run/puppet\n",
+				    " ssldir=$vardir/ssl\n",
+				    " pluginsync=true\n",
+				    "[agent]\n",
+				    " classfile=$vardir/classes.txt\n",
+				    " localconfig=$vardir/localconfig\n",
+				    " server=", { "Fn::GetAtt" : [ "cc1", "PrivateDnsName" ] }, "\n" ]] },
+				"mode" : "000644",
+				"owner" : "root",
+				"group" : "root"
+			    },
+			    "/etc/default/puppet" : {
+				"content" : { "Fn::Join" : [ "", [
+				    "START=yes\n",
+				    "SERVER=`curl http://169.254.169.254/latest/meta-data/hostname`\n",
+				    "CERTNAME=fe-`echo $SERVER | tr '[:upper:]' '[:lower:]'`\n",
+				    "DAEMON_OPTS=\"--certname $CERTNAME\"\n"
+				    ] ] },
+				"mode" : "000644",
+				"owner" : "root",
+				"group" : "root"
+			    }
+			},
+			"services" : {
+			    "sysvinit" : {
+				"puppet" : {
+				    "enabled" : "true",
+				    "ensureRunning" : "true"
+				}
+			    }
+			}
+		    }
+		},
+		"Puppet" : {
+		    "cc1_address" : { "Fn::GetAtt" : [ "cc1", "PrivateIp" ] },
+		    "db1_address" : { "Fn::GetAtt" : [ "db1", "Endpoint.Address" ] },
+		    "db_name" : { "Ref" : "DBName" },
+		    "db_username" : { "Ref" : "DBUsername" },
+		    "db_password" : { "Ref" : "DBPassword" },
+		    "platform_rest_url" : { "Ref" : "PlatformRestURL" },
+		    "newrelic_key" : { "Ref" : "NewRelicKey" },
+		    "stack_name" : { "Ref" : "AWS::StackName" }
+		}
+	    },
+	    "Properties" : {
+		"KeyName" : { "Ref" : "KeyName" },
+		"ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+						  { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "FEInstanceType" },
+									"Arch" ] } ] },
+		"SecurityGroups" : [ { "Ref" : "FESecurityGroup" } ],
+		"InstanceType" : { "Ref" : "FEInstanceType" },
+		"UserData" : { 
+		    "Fn::Base64" : { 
+			"Fn::Join" : ["", [ "#!/bin/bash\n",
+					    "apt-get -y update\n",
+					    "apt-get -y install python-setuptools\n",
+					    "easy_install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+					    "/usr/local/bin/cfn-init -v --region ", { "Ref" : "AWS::Region" },
+					    " -s ", { "Ref" : "AWS::StackName" }, " -r FELaunchConfig ",
+					    " --access-key ", { "Ref" : "CFNInitUserKeys" },
+					    " --secret-key ", { "Fn::GetAtt" : ["CFNInitUserKeys", "SecretAccessKey"]}, "\n",
+					    "/usr/local/bin/cfn-signal -e $? '", { "Ref" : "FEWaitHandle" }, "'\n" ] ]
+		    }
+		}
+	    }
+	},
+
+	"elb1" : {
+	    "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+	    "Properties" : {
+		"AvailabilityZones" : { "Fn::GetAZs" : "" },
+		"Listeners" : [ {
+		    "LoadBalancerPort" : "80",
+		    "InstancePort" : "80",
+		    "Protocol" : "TCP"
+		},
+		{
+                    "LoadBalancerPort" : "443",
+                    "InstancePort" : "443",
+                    "Protocol" : "TCP"
+                } ],
+		"HealthCheck" : {
+		    "Target" : "HTTPS:443/",
+		    "HealthyThreshold" : "2",
+		    "UnhealthyThreshold" : "5",
+		    "Interval" : "15",
+		    "Timeout" : "5"
+		}
+	    }
+	},
+
+	"FEWaitHandle" : {
+	    "Type" : "AWS::CloudFormation::WaitConditionHandle"
+	},
+
+	"FEWaitCondition" : {
+	    "Type" : "AWS::CloudFormation::WaitCondition",
+	    "DependsOn" : "FEAutoScalingGroup",
+	    "Properties" : {
+		"Handle" : { "Ref" : "FEWaitHandle" },
+		"Timeout" : "1800"
+	    }
+	},
+
+	"db1" : {
+	    "Type" : "AWS::RDS::DBInstance",
+	    "Properties" : {
+		"DBSecurityGroups" : [ { "Ref" : "DBSecurityGroup" } ],
+		"AllocatedStorage" : { "Ref" : "DBAllocatedStorage" },
+		"Engine" : "MySQL",
+		"EngineVersion" : "5.6",
+		"MasterUsername" : { "Ref" : "DBMasterUsername" },
+		"MasterUserPassword" : { "Ref" : "DBMasterPassword" },
+		"DBInstanceClass" : { "Ref" : "DBInstanceType" },
+		"DBSnapshotIdentifier" : { "Ref" : "DBSnapshotIdentifier" }
+	    }
+	},
+
+	"DBSecurityGroup" : {
+	    "Type" : "AWS::RDS::DBSecurityGroup",
+	    "Properties" : {
+		"GroupDescription" : "Security group for DB instances",
+		"DBSecurityGroupIngress" : [ 
+		    { "EC2SecurityGroupName" : { "Ref" : "FESecurityGroup" } },
+		    { "EC2SecurityGroupName" : { "Ref" : "CCSecurityGroup" } }
+		]
+	    }
+	}
+
+    },
+	
+    "Outputs" : {
+
+	"cc1PublicDNSName" : {
+	    "Value" : { "Fn::GetAtt" : [ "cc1", "PublicDnsName" ] },
+	    "Description" : "Public DNS Name of cc1"
+	},
+
+	"elb1PublicDNSName" : {
+	    "Value" : { "Fn::GetAtt" : [ "elb1", "DNSName" ] },
+	    "Description" : "Public DNS name of elb1" 
+	},
+
+	"db1PublicDNSName" : {
+	    "Value" : { "Fn::GetAtt" : [ "db1", "Endpoint.Address" ] },
+	    "Description" : "Public DNS name of db1"
+	}
+
+    }
+
+}
