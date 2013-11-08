@@ -148,12 +148,20 @@ class fe inherits common {
     mode =>  0755
   }
   
-  apache2_mod_jk::loadmodule{"rewrite": }
+  apache2_mod_jk::loadmodule { "rewrite" : }
   
-  apache2_mod_jk::loadmodule{"ssl": }
+  apache2_mod_jk::loadmodule { "ssl" : }
   
   apache2_mod_jk::vhost { "/etc/apache2/sites-available/default" :
     document_root => $www_html_dir,
+  }
+
+  class { "apis" :
+    db1_address => $cfn_db1_address,
+    db_name => $cfn_db_name,
+    db_username => $cfn_db_username,
+    db_password => $cfn_db_password,
+    platform_rest_url => $cfn_platform_rest_url,
   }
   
 }

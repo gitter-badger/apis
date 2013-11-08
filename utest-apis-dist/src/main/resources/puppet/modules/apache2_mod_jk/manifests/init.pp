@@ -1,8 +1,10 @@
 class apache2_mod_jk(
   $ajp_port = 8009,
   $jvm_route = "jvm1",
+  $webapp_name = "apis-authorization-server-war-latest",
   $jk_conf_file = "/etc/apache2/mods-available/jk.conf",
-  $workers_properties_file = "/etc/libapache2-mod-jk/workers.properties"
+  $workers_properties_file = "/etc/libapache2-mod-jk/workers.properties",
+  $uriworkermap_properties_file = "/etc/libapache2-mod-jk/uriworkermap.properties"
   ) {
 
   package { [ "apache2", "libapache2-mod-jk" ]  :
@@ -25,6 +27,15 @@ class apache2_mod_jk(
   
   file { $workers_properties_file :
     content => template("apache2_mod_jk/workers.properties.erb"),
+    mode => 0644,
+    owner => "root",
+    group => "root",
+    require => Package["apache2", "libapache2-mod-jk"],
+    notify => Service["apache2"],
+  }
+
+  file { $uriworkermap_properties_file :
+    content => template("apache2_mod_jk/uriworkermap.properties.erb"),
     mode => 0644,
     owner => "root",
     group => "root",

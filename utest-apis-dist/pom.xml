@@ -14,6 +14,8 @@
 	    <groupId>nl.surfnet.apis</groupId>
 	    <artifactId>apis-authorization-server-war</artifactId>
 	    <version>${project.version}</version>
+	    <type>war</type>
+	    <scope>runtime</scope>
 	</dependency>
     </dependencies>
     <build>

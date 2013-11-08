@@ -9,19 +9,33 @@
     <fileSets>
 	<fileSet>
 	    <filtered>false</filtered>
-	    <directory>../apis-authorization-server-war/target</directory>
-	    <outputDirectory>/</outputDirectory>
+            <directory>src/main/resources</directory>
+            <outputDirectory>/</outputDirectory>
 	    <includes>
-		<include>apis-authorization-server-war-${project.version}.war</include>
+		<include>**/*</include>
 	    </includes>
+	    <excludes>
+		<exclude>VERSION</exclude>
+	    </excludes>
 	</fileSet>
 	<fileSet>
 	    <filtered>true</filtered>
             <directory>src/main/resources</directory>
             <outputDirectory>/</outputDirectory>
 	    <includes>
-		<include>**/*</include>
+		<include>VERSION</include>
 	    </includes>
 	</fileSet>
     </fileSets>
+    <dependencySets>
+	<dependencySet>
+	    <outputDirectory>/</outputDirectory>
+	    <scope>runtime</scope>
+	</dependencySet>
+	<dependencySet>
+	    <outputDirectory>/puppet/modules/apis/files</outputDirectory>
+	    <outputFileNameMapping>${artifact.artifactId}-latest.${artifact.extension}</outputFileNameMapping>
+	    <scope>runtime</scope>
+	</dependencySet>
+    </dependencySets>
 </assembly>

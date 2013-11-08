@@ -3,16 +3,11 @@ class tomcat(
   $jvm_route = "jvm1",
   $max_threads = 150,
   $min_spare_threads = 4,
-  $catalina_opts = "-Xmx1536m -XX:MaxPermSize=256m -Xms512m"
+  $catalina_opts = "-Xmx1536m -XX:MaxPermSize=256m -Xms512m",
+  $catalina_base = "/var/lib/tomcat7",
+  $catalina_home = "/usr/share/tomcat7"
   ) {
 
-  # the ubuntu version tomcat separates CATALINA_BASE and CATALINA_HOME
-  # as follows:
-  
-  $catalina_base = "/var/lib/tomcat7"
-
-  $catalina_home = "/usr/share/tomcat7"
-  
   package { [ "tomcat7", "libtcnative-1" ] :
     ensure => installed,
   }
@@ -108,7 +103,7 @@ class tomcat(
     notify => Service["tomcat7"],
   }
 
-  # tomcat options
+  # runtime options for tomcat
 
   file { "${catalina_base}/bin" :
     ensure => directory,
@@ -126,6 +121,17 @@ class tomcat(
     mode => 0644,
     require => [ File["${catalina_base}/bin"], Package["tomcat7"] ],
     notify => Service["tomcat7"],
+  }
+
+  # get rid of stuff we don't use
+
+  file { "${catalina_base}/conf/tomcat-users.xml" :
+    ensure => absent,
+  }
+
+  file { "${catalina_base}/webapps/ROOT" :
+    ensure => absent,
+    force => true,
   }
 
 }
