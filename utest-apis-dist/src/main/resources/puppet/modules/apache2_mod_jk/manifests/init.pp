@@ -1,7 +1,7 @@
 class apache2_mod_jk(
   $ajp_port = 8009,
   $jvm_route = "jvm1",
-  $webapp_name = "apis-authorization-server-war-latest",
+  $webapp_name = "apis",
   $jk_conf_file = "/etc/apache2/mods-available/jk.conf",
   $workers_properties_file = "/etc/libapache2-mod-jk/workers.properties",
   $uriworkermap_properties_file = "/etc/libapache2-mod-jk/uriworkermap.properties"

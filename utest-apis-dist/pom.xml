@@ -29,7 +29,8 @@
 		    </descriptors>
           	    <outputDirectory>target</outputDirectory>
           	    <workDirectory>target/assembly</workDirectory>
-        	</configuration>
+		    <appendAssemblyId>false</appendAssemblyId>
+		</configuration>
         	<executions>
           	    <execution>
             		<id>assembly</id> 

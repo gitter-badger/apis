@@ -138,7 +138,8 @@ class fe inherits common {
     owner  => "root",
     group  => "root",
     mode   => "700",
-    source => "puppet:///dist/ssl"
+    source => "puppet:///dist/ssl",
+    require => Package["apache2"],
   }
 
   file { [ $www_dir, $www_html_dir ] :

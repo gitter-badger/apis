@@ -24,7 +24,7 @@
 
     # Our JK error log
     # You can (and should) use rotatelogs here
-    JkLogFile "|/usr/bin/logger -i -tmod_jk -plocal2.error"
+    JkLogFile "|/usr/bin/logger -i -tmod_jk -plocal2.info"
 
     # Our JK log level (trace,debug,info,warn,error)
     JkLogLevel info
@@ -118,5 +118,6 @@
     # - can copy all global mounts to all virtual hosts by putting
     #   "JkMountCopy All" into the global server
     # Since: 1.2.26
+    JkMountCopy All
 
 </IfModule>
