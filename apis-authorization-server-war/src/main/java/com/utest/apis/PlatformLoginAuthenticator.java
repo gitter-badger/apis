@@ -51,9 +51,13 @@ public class PlatformLoginAuthenticator extends FormLoginAuthenticator
 		try
 		{
 			String protoHostPath = config.getPlatformRestURL();
+			if (protoHostPath.endsWith("/"))
+			{
+				protoHostPath = protoHostPath.substring(0, protoHostPath.length() - 1);
+			}
 			String query = String.format("username=%s&password=%s", URLEncoder.encode(request.getParameter("j_username"), "UTF-8"),
 					URLEncoder.encode(request.getParameter("j_password"), "UTF-8"));
-			HttpURLConnection huc = (HttpURLConnection)new URL(protoHostPath + "?" + query).openConnection();
+			HttpURLConnection huc = (HttpURLConnection)new URL(protoHostPath + "/auth/login?" + query).openConnection();
 			huc.setRequestProperty("Accept", "application/xml");
 			huc.connect();
 			setAuthStateValue(request, request.getParameter(AUTH_STATE));
