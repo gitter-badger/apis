@@ -148,6 +148,14 @@ class fe inherits common {
     group => "root",
     mode =>  0755
   }
+
+  file { "${www_html_dir}/index.html" :
+    owner => "root",
+    group => "root",
+    mode => 0644,
+    content => "<html><head><meta http-equiv=\"refresh\" content=\"0; url=http://utest.com/\"></head><body></body></html>",
+    require => File[$www_dir, $www_html_dir],
+  }
   
   apache2_mod_jk::loadmodule { "rewrite" : }
   
