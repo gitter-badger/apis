@@ -10,7 +10,7 @@
 	<fileSet>
 	    <filtered>false</filtered>
             <directory>src/main/resources</directory>
-            <outputDirectory>/${project.name}-${project.version}</outputDirectory>
+            <outputDirectory>/${project.name}</outputDirectory>
 	    <includes>
 		<include>**/*</include>
 	    </includes>
@@ -21,7 +21,7 @@
 	<fileSet>
 	    <filtered>true</filtered>
             <directory>src/main/resources</directory>
-            <outputDirectory>/${project.name}-${project.version}</outputDirectory>
+            <outputDirectory>/${project.name}</outputDirectory>
 	    <includes>
 		<include>VERSION</include>
 	    </includes>
@@ -29,11 +29,11 @@
     </fileSets>
     <dependencySets>
 	<dependencySet>
-	    <outputDirectory>/${project.name}-${project.version}</outputDirectory>
+	    <outputDirectory>/${project.name}</outputDirectory>
 	    <scope>runtime</scope>
 	</dependencySet>
 	<dependencySet>
-	    <outputDirectory>/${project.name}-${project.version}/puppet/modules/apis/files</outputDirectory>
+	    <outputDirectory>/${project.name}/puppet/modules/apis/files</outputDirectory>
 	    <outputFileNameMapping>${artifact.artifactId}-latest.${artifact.extension}</outputFileNameMapping>
 	    <scope>runtime</scope>
 	</dependencySet>
