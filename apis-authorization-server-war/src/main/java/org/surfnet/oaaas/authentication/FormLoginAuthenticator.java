@@ -40,12 +40,12 @@ import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
 @Named("formAuthenticator")
 public class FormLoginAuthenticator extends AbstractAuthenticator {
 
-  private static final String SESSION_IDENTIFIER = "AUTHENTICATED_PRINCIPAL";
+  protected static final String SESSION_IDENTIFIER = "AUTHENTICATED_PRINCIPAL";
 
   @Override
   public boolean canCommence(HttpServletRequest request) {
     return request.getMethod().equals("POST") && request.getParameter(AUTH_STATE) != null
-        && request.getParameter("j_username") != null;
+        && request.getParameter("j_username") != null && request.getParameter("j_password") != null;
   }
 
   @Override

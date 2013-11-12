@@ -48,6 +48,7 @@ public class PlatformLoginAuthenticator extends FormLoginAuthenticator
 	@Override
 	protected boolean processForm(HttpServletRequest request)
 	{
+	    setAuthStateValue(request, request.getParameter(AUTH_STATE));
 		try
 		{
 			String protoHostPath = config.getPlatformRestURL();
@@ -60,10 +61,10 @@ public class PlatformLoginAuthenticator extends FormLoginAuthenticator
 			HttpURLConnection huc = (HttpURLConnection)new URL(protoHostPath + "/auth/login?" + query).openConnection();
 			huc.setRequestProperty("Accept", "application/xml");
 			huc.connect();
-			setAuthStateValue(request, request.getParameter(AUTH_STATE));
 			AuthenticatedPrincipal ap = getAuthenticatedPrincipal(request.getParameter("j_username"), huc);
 			if (ap != null)
 			{
+			    request.getSession().setAttribute(SESSION_IDENTIFIER, ap);
 				setPrincipal(request, ap);
 				return true;
 			}

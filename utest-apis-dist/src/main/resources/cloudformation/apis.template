@@ -62,7 +62,8 @@
 
 	"DBSnapshotIdentifier" : {
 	    "Description" : "Snapshot for configuring the initial database",
-	    "Type" : "String"
+	    "Type" : "String",
+	    "Default" : "apis-default"
 	},
 
 	"DBName" : {
