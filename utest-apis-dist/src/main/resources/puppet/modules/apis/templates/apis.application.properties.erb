@@ -30,7 +30,7 @@ authenticatorClass=com.utest.apis.PlatformLoginAuthenticator
 userConsentHandlerClass=org.surfnet.oaaas.consent.FormUserConsentHandler
 
 # The url and key/secret that is used by the Client/Resource Server endpoints to validate the oauth access tokens
-adminService.tokenVerificationUrl=https://apis-elb1-1BFDQ49OH7G6J-663224530.us-east-1.elb.amazonaws.com/jk/v1/tokeninfo
+adminService.tokenVerificationUrl=https://<%= stack_name %>.utest.com/apis/v1/tokeninfo
 adminService.resourceServerKey=authorization-server-admin
 adminService.resourceServerSecret=4f01eb1a-f865-4503-8350-37c63bf97152
 adminService.jsonTypeInfoIncluded=false
