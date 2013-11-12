@@ -29,6 +29,7 @@
 		    </descriptors>
           	    <outputDirectory>target</outputDirectory>
           	    <workDirectory>target/assembly</workDirectory>
+		    <finalName>${project.name}</finalName>
 		    <appendAssemblyId>false</appendAssemblyId>
 		</configuration>
         	<executions>
