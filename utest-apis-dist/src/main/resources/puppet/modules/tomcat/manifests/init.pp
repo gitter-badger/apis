@@ -3,7 +3,7 @@ class tomcat(
   $jvm_route = "jvm1",
   $max_threads = 150,
   $min_spare_threads = 4,
-  $catalina_opts = "-Xmx1536m -XX:MaxPermSize=256m -Xms512m -Djsse.enableSNIExtension=false",
+  $catalina_opts = "-Xmx512m -Djsse.enableSNIExtension=false",
   $catalina_base = "/var/lib/tomcat7",
   $catalina_home = "/usr/share/tomcat7"
   ) {
