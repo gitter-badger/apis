@@ -8,6 +8,7 @@ class apis(
   $db_password,
   $engine_name = "Catalina",
   $hostname = "localhost",
+  $stack_name
   ) {
 
   file { "${catalina_base}/lib/apis.application.properties" :

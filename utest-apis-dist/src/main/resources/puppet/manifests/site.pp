@@ -171,6 +171,7 @@ class fe inherits common {
     db_username => $cfn_db_username,
     db_password => $cfn_db_password,
     platform_rest_url => $cfn_platform_rest_url,
+    stack_name => $cfn_stack_name,
   }
   
 }
