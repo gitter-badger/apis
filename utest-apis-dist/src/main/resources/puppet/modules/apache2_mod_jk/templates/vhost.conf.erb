@@ -17,6 +17,8 @@ ServerTokens Prod
      SSLCertificateChainFile /etc/apache2/ssl/DigiCertCA.crt
      
      DocumentRoot <%= document_root %>
+
+     ErrorDocument 404 http://utest.com
      
      <Directory <%= document_root %>>
          Options Indexes FollowSymLinks MultiViews

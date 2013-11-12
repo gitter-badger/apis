@@ -22,4 +22,4 @@ VALUES
 
 REPLACE INTO Client_redirectUris (CLIENT_ID, element)
 VALUES
-(99997, 'https://voltrondev.utest.com/wsgi/api/redirect');
+(99997, 'https://voltrondev.utest.com/wsgi/api/auth/redirect');
