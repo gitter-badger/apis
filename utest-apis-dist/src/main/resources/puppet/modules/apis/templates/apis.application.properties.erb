@@ -27,7 +27,7 @@ flyway.migrations.location=db/migration/mysql, db/migration/mysql_content
 authenticatorClass=com.utest.apis.PlatformLoginAuthenticator
 
 # The user consent module
-userConsentHandlerClass=org.surfnet.oaaas.consent.FormUserConsentHandler
+userConsentHandlerClass=org.surfnet.oaaas.noop.NoopUserConsentHandler
 
 # The url and key/secret that is used by the Client/Resource Server endpoints to validate the oauth access tokens
 adminService.tokenVerificationUrl=https://<%= stack_name %>.utest.com/apis/v1/tokeninfo
