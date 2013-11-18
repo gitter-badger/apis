@@ -5,7 +5,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -128,12 +130,12 @@ public class PlatformLoginAuthenticator extends FormLoginAuthenticator
 		return getValue(d, HTTP_V4_MODEL_WEBSERVICE_UTEST_COM_URI, "userName");
 	}
 	
-	private Collection<String> getValues(Document d, String parentNamespaceURI, String parentLocalName, String namespaceURI, String localName) throws Exception
+	private List<String> getValues(Document d, String parentNamespaceURI, String parentLocalName, String namespaceURI, String localName) throws Exception
 	{
 		NodeList nli = d.getElementsByTagNameNS(parentNamespaceURI, parentLocalName);
 		for (int i = 0, ilen = nli.getLength(); i < ilen; )
 		{
-			Collection<String> roles = new ArrayList<String>();
+			List<String> roles = new ArrayList<String>();
 			Node n = nli.item(i);
 			if (n instanceof Element)
 			{
@@ -154,7 +156,7 @@ public class PlatformLoginAuthenticator extends FormLoginAuthenticator
 		throw new Exception("Can't find '" + namespaceURI + "/" + localName + "' element in platform response!");
 	}
 	
-	Collection<String> getRoles(Document d) throws Exception
+	List<String> getRoles(Document d) throws Exception
 	{
 		return getValues(d, HTTP_V4_MODEL_WEBSERVICE_UTEST_COM_URI, "roles", URN_ORG_APACHE_CXF_AEGIS_TYPES_URI, "int");
 	}
@@ -178,7 +180,11 @@ public class PlatformLoginAuthenticator extends FormLoginAuthenticator
 			}
 		}
 
-		attributes.put("applicationFeatures", StringUtils.join(getValues(d, HTTP_V4_MODEL_WEBSERVICE_UTEST_COM_URI, "applicationFeatures", URN_ORG_APACHE_CXF_AEGIS_TYPES_URI, "string"), ","));
+		List<String> features = getValues(d, HTTP_V4_MODEL_WEBSERVICE_UTEST_COM_URI, "applicationFeatures", URN_ORG_APACHE_CXF_AEGIS_TYPES_URI, "string");
+		attributes.put("applicationFeatures", StringUtils.join(features, ","));
+		
+		List<String> grantedAuthorities = getValues(d, HTTP_V4_MODEL_WEBSERVICE_UTEST_COM_URI, "grantedAuthorities", URN_ORG_APACHE_CXF_AEGIS_TYPES_URI, "string");
+		attributes.put("grantedAuthorities", StringUtils.join(grantedAuthorities, ","));
 
 		return attributes;
 	}
